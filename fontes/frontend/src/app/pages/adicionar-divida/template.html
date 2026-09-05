@@ -1,0 +1,174 @@
+<main class="adicionar-container">
+  <div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button class="btn btn-outline-secondary btn-icon" (click)="voltar()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <div>
+        <h1 class="h4 mb-0">Adicionar Dívida</h1>
+        <small class="text-secondary">Adicionando para {{ mes }}/{{ ano }}</small>
+      </div>
+    </div>
+
+    <!-- Card Form -->
+    <div class="card card-custom">
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvar()">
+          <!-- Alert erro -->
+          <div *ngIf="erro()" class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+            <span class="material-icons">error_outline</span>
+            <span>{{ erro() }}</span>
+          </div>
+
+          <!-- Tipo de Dívida -->
+          <div class="mb-4">
+            <label class="form-label font-weight-bold">Tipo de Dívida</label>
+            <div class="tipo-grid">
+              <div
+                *ngFor="let t of TIPOS"
+                class="tipo-card"
+                [class.active]="tipo === t.value"
+                (click)="tipo = t.value; onTipoChange()"
+              >
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="tipo-title">{{ t.label }}</span>
+                  <span class="material-icons tipo-radio">
+                    {{ tipo === t.value ? 'radio_button_checked' : 'radio_button_unchecked' }}
+                  </span>
+                </div>
+                <small class="tipo-desc">{{ t.descricao }}</small>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4 border-secondary opacity-25" />
+
+          <!-- Campos dinâmicos ou comuns -->
+          <div class="row g-3">
+            <!-- Seleção de Cartão de Crédito se for do tipo CARTAO -->
+            <div class="col-12" *ngIf="precisaCartao">
+              <label class="form-label">Cartão de Crédito Cadastrado</label>
+              <select
+                class="form-select"
+                [(ngModel)]="cartaoTemplateId"
+                name="cartaoTemplateId"
+                (change)="onCartaoSelecionado()"
+              >
+                <option [ngValue]="null">-- Selecione um cartão existente --</option>
+                <option *ngFor="let c of cartoes()" [value]="c.id">
+                  {{ c.nome }} (Vence dia {{ c.diaVencimento }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Nome -->
+            <div class="col-12 col-md-8">
+              <label class="form-label">Nome da Dívida *</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Ex: Fatura Nubank, Aluguel, Empréstimo..."
+                [(ngModel)]="nome"
+                name="nome"
+                required
+              />
+            </div>
+
+            <!-- Dia Vencimento -->
+            <div class="col-12 col-md-4">
+              <label class="form-label">Dia do Vencimento *</label>
+              <input
+                type="number"
+                min="1"
+                max="31"
+                class="form-control"
+                [(ngModel)]="diaVencimento"
+                name="diaVencimento"
+                required
+              />
+            </div>
+
+            <!-- Valor (opcional apenas se for cartão de crédito no momento da criação) -->
+            <div class="col-12 col-md-6">
+              <label class="form-label">
+                Valor (R$) <span *ngIf="valorObrigatorio">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                class="form-control"
+                placeholder="0.00"
+                [(ngModel)]="valor"
+                name="valor"
+              />
+              <small class="text-secondary" *ngIf="tipo === 'CARTAO'">
+                Você pode informar 0.00 agora e ajustar o valor exato da fatura depois.
+              </small>
+            </div>
+
+            <!-- Responsável (se repasse) -->
+            <div class="col-12 col-md-6" *ngIf="precisaResponsavel">
+              <label class="form-label">Pessoa Responsável (Repasse) *</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Ex: Walkiria, João..."
+                [(ngModel)]="responsavel"
+                name="responsavel"
+              />
+            </div>
+
+            <!-- Parcela Atual e Total de Parcelas (se parcelada/empréstimo) -->
+            <ng-container *ngIf="precisaParcelas">
+              <div class="col-6 col-md-3">
+                <label class="form-label">Parcela Atual</label>
+                <input
+                  type="number"
+                  min="1"
+                  class="form-control"
+                  [(ngModel)]="parcelaAtual"
+                  name="parcelaAtual"
+                />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">Total de Parcelas</label>
+                <input
+                  type="number"
+                  min="1"
+                  class="form-control"
+                  [(ngModel)]="totalParcelas"
+                  name="totalParcelas"
+                />
+              </div>
+            </ng-container>
+
+            <!-- Observações -->
+            <div class="col-12">
+              <label class="form-label">Observações / Detalhes</label>
+              <textarea
+                class="form-control"
+                rows="3"
+                placeholder="Qualquer anotação relevante..."
+                [(ngModel)]="observacao"
+                name="observacao"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Botoes de Ação -->
+          <div class="d-flex justify-content-end gap-3 mt-4">
+            <button type="button" class="btn btn-outline-secondary" (click)="voltar()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary d-flex align-items-center gap-2" [disabled]="salvando()">
+              <span *ngIf="salvando()" class="spinner-border spinner-border-sm"></span>
+              <span *ngIf="!salvando()" class="material-icons">save</span>
+              <span>{{ salvando() ? 'Salvando...' : 'Salvar Dívida' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>

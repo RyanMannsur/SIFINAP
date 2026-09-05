@@ -1,0 +1,12 @@
+<div class="resumo-card" [class]="'resumo-card--' + variante">
+  <div class="resumo-card__header">
+    <span class="material-icons resumo-card__icon">{{ icone }}</span>
+    <span class="resumo-card__titulo">{{ titulo }}</span>
+  </div>
+  <div class="resumo-card__valor">
+    {{ valor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+  </div>
+  @if (subtitulo) {
+    <div class="resumo-card__subtitulo">{{ subtitulo }}</div>
+  }
+</div>

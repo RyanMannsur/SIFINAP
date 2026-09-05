@@ -1,0 +1,19 @@
+<div class="mb-3 position-relative select-wrapper">
+  <label *ngIf="label" class="form-label text-muted small fw-bold mb-1">{{ label }}</label>
+  <div class="position-relative">
+    <select 
+      class="form-select custom-select pe-5"
+      [disabled]="disabled"
+      [ngModel]="value"
+      (ngModelChange)="onModelChanged($event)"
+      (blur)="onTouched()">
+      <option *ngIf="placeholder" [ngValue]="''" disabled>{{ placeholder }}</option>
+      <option *ngFor="let opt of options" [ngValue]="getOptionValue(opt)">
+        {{ getOptionLabel(opt) }}
+      </option>
+    </select>
+    <span class="material-icons position-absolute pe-none text-muted select-chevron">
+      expand_more
+    </span>
+  </div>
+</div>

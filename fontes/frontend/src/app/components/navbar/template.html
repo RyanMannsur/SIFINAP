@@ -1,0 +1,40 @@
+<nav class="sifinap-navbar">
+  <div class="container-fluid px-3 px-md-4">
+    <div class="navbar-inner d-flex align-items-center justify-content-between gap-3 flex-wrap">
+
+      <!-- Logo -->
+      <div class="navbar-brand-wrap d-flex align-items-center gap-2">
+        <span class="material-icons navbar-icon">account_balance_wallet</span>
+        <span class="navbar-title">SIFINAP</span>
+      </div>
+
+      <!-- Navegador de mês -->
+      <div class="month-navigator d-flex align-items-center gap-2">
+        <button class="nav-arrow-btn" (click)="mesAnterior.emit()" title="Mês anterior">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <div class="month-display">
+          <span class="month-name">{{ nomeMes }}</span>
+          <span class="month-year">{{ ano }}</span>
+        </div>
+        <button class="nav-arrow-btn" (click)="proximoMes.emit()" title="Próximo mês">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- Ações -->
+      <div class="d-flex align-items-center gap-2">
+        <a routerLink="/cartoes" class="btn btn-outline-primary d-flex align-items-center gap-1 border-0 fw-semibold">
+          <span class="material-icons" style="font-size: 1.1rem">credit_card</span>
+          <span class="d-none d-sm-inline">Cartões</span>
+        </a>
+
+        <button class="add-btn d-flex align-items-center gap-2" (click)="adicionarDivida.emit()">
+          <span class="material-icons">add</span>
+          <span class="d-none d-sm-inline">Adicionar Dívida</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</nav>

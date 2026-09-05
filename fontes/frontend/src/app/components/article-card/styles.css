@@ -1,0 +1,92 @@
+.article-card {
+    transition: transform 0.2s ease-in-out;
+}
+.article-card:hover {
+    transform: translateY(-2px);
+}
+.placeholder-img {
+    min-height: 140px;
+    border-radius: 12px;
+}
+
+.media-wrapper {
+    height: 180px;
+}
+
+.placeholder-icon {
+    font-size: 48px;
+}
+.text-truncate-3 {
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.article-title {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.author-meta {
+    color: #2dd4bf;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.category-meta {
+    color: #2dd4bf;
+}
+
+.category-text {
+    font-size: 13px;
+}
+
+.category-icon {
+    font-size: 18px;
+    margin-top: -2px;
+}
+
+.actions-trigger {
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.actions-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 10;
+    min-width: 170px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+}
+
+.actions-item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    border-radius: 8px;
+    color: #343a40;
+    font-size: 14px;
+}
+
+.actions-item:hover:not(:disabled) {
+    background: #f8f9fa;
+}
+
+.actions-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.actions-item-danger {
+    color: #dc3545;
+}
+
+.actions-icon {
+    font-size: 18px;
+}

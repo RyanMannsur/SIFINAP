@@ -1,0 +1,104 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'material-icons/iconfont/material-icons.css';
+
+:root {
+  color-scheme: light;
+  
+  /* Palette de Cores Clean Financeiras */
+  --app-bg: #f4f6f9;
+  --app-surface: #ffffff;
+  --app-border: #e2e8f0;
+  --app-text-primary: #0f172a;
+  --app-text-secondary: #64748b;
+  --app-primary: #2563eb;
+  --app-primary-hover: #1d4ed8;
+
+  /* Status de Dívidas (Soft / Pastel Legíveis) */
+  --status-pago: #16a34a;
+  --status-pago-bg: #dcfce7;
+  --status-vencido: #dc2626;
+  --status-vencido-bg: #fee2e2;
+  --status-em-dia: #d97706;
+  --status-em-dia-bg: #fef3c7;
+  --status-sem-valor: #475569;
+  --status-sem-valor-bg: #f1f5f9;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--app-bg);
+  color: var(--app-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Badges globais */
+.badge-pago {
+  background-color: var(--status-pago-bg);
+  color: var(--status-pago);
+  border: 1px solid #bbf7d0;
+  font-weight: 600;
+}
+
+.badge-vencido {
+  background-color: var(--status-vencido-bg);
+  color: var(--status-vencido);
+  border: 1px solid #fecaca;
+  font-weight: 600;
+}
+
+.badge-em-dia {
+  background-color: var(--status-em-dia-bg);
+  color: var(--status-em-dia);
+  border: 1px solid #fde68a;
+  font-weight: 600;
+}
+
+.badge-sem-valor {
+  background-color: var(--status-sem-valor-bg);
+  color: var(--status-sem-valor);
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+}
+
+/* Form Controls Padrão Claro */
+.form-control, .form-select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+
+  &:focus {
+    border-color: var(--app-primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+  }
+
+  &::placeholder {
+    color: #94a3b8 !important;
+  }
+}
+
+/* Scrollbar limpa */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

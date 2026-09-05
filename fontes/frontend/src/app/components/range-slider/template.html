@@ -1,0 +1,31 @@
+<div class="range-slider-container mb-3">
+  <div class="d-flex justify-content-between mb-1">
+    <label class="form-label text-muted small mb-0 fw-bold">{{ label }}</label>
+    <small class="text-muted fw-bold">{{ minValue }} - {{ maxValue }}</small>
+  </div>
+  
+  <div class="position-relative d-flex align-items-center range-wrapper">
+    <div class="range-track"></div>
+    
+    <div class="range-active" 
+         [style.left.%]="((minValue - min) / (max - min)) * 100"
+         [style.width.%]="((maxValue - minValue) / (max - min)) * 100">
+    </div>
+
+    <input type="range" 
+           [min]="min" 
+           [max]="max" 
+           [(ngModel)]="minValue" 
+           (input)="onMinChange()"
+           class="form-range custom-range thumb-left m-0">
+           
+    <input type="range" 
+           [min]="min" 
+           [max]="max" 
+           [(ngModel)]="maxValue" 
+           (input)="onMaxChange()"
+           class="form-range custom-range thumb-right m-0">
+  </div>
+  
+  <small *ngIf="description" class="text-muted d-block mt-2 range-description">{{ description }}</small>
+</div>

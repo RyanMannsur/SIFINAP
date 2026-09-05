@@ -1,0 +1,5 @@
+<div class="row g-4">
+  <div *ngFor="let item of items" [class]="columnClass">
+    <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"></ng-container>
+  </div>
+</div>

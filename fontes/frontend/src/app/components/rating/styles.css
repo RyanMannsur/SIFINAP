@@ -1,0 +1,14 @@
+.star-icon {
+    font-size: 24px;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star-icon.active {
+    color: #475569;
+}
+.rating-container.readonly .star-icon {
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+}

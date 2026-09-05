@@ -1,0 +1,55 @@
+<div class="card border-0 article-card bg-transparent" (click)="onCardClick()" style="cursor: pointer;">
+  <div class="row g-0">
+    <div class="col-md-6 pe-md-2">
+      <div class="rounded-4 overflow-hidden position-relative media-wrapper">
+        <img *ngIf="imageUrl" [src]="imageUrl" class="img-fluid object-fit-cover w-100 h-100" alt="Article image">
+        <div *ngIf="!imageUrl" class="bg-light h-100 w-100 d-flex align-items-center justify-content-center">
+          <span class="material-icons text-muted placeholder-icon">image</span>
+        </div>
+      </div>
+      <div class="mt-2 d-flex justify-content-between align-items-center px-1" (click)="$event.stopPropagation()">
+        <div class="d-flex align-items-center gap-2">
+          <app-rating [maxStars]="5" [ngModel]="rating" [readonly]="true"></app-rating>
+          <small class="text-muted fw-bold">({{ rating | number:'1.1-1' }})</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 ps-md-2 d-flex flex-column">
+      <div class="card-body p-0 d-flex flex-column h-100 mt-2 mt-md-0">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <small class="text-muted">{{ timeText }}</small>
+          <div *ngIf="actions.length > 0" class="position-relative" (click)="onActionsMenuClick($event)">
+            <button type="button"
+              class="actions-trigger d-inline-flex align-items-center justify-content-center bg-transparent border-0 p-0 lh-1"
+              aria-label="Abrir menu de acoes" (click)="toggleActionsMenu($event)">
+              <span class="material-icons">more_horiz</span>
+            </button>
+
+            <div *ngIf="isActionsMenuOpen" class="actions-menu shadow-sm p-1">
+              <button *ngFor="let action of actions" type="button"
+                class="actions-item d-flex align-items-center gap-2 text-start px-2 py-1"
+                [class.actions-item-danger]="action.danger" [disabled]="action.disabled"
+                (click)="onActionSelect(action, $event)">
+                <span *ngIf="action.icon" class="material-icons actions-icon">{{ action.icon }}</span>
+                <span>{{ action.label }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <h6 class="card-title text-dark flex-grow-1 text-truncate-3 article-title">{{ title }}</h6>
+
+        <div class="d-flex justify-content-between align-items-end mt-auto">
+          <small class="author-meta text-primary" style="cursor: pointer;" (click)="onAuthorClick($event)">{{ author
+            }}</small>
+          <div class="d-flex align-items-center gap-1 category-meta">
+            <small class="category-text">{{ category }}</small>
+            <span *ngIf="categoryIcon" class="material-icons category-icon">{{ categoryIcon }}</span>
+            <span *ngIf="!categoryIcon" class="material-icons category-icon">sports_soccer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

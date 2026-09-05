@@ -1,0 +1,19 @@
+.pagination-custom .page-link {
+    color: #64748b;
+    background: transparent;
+}
+.pagination-custom .page-link:hover {
+    background: #f1f5f9;
+}
+.pagination-custom .page-item.active .page-link {
+    background-color: #d1fae5;
+    color: #0f766e;
+    font-weight: 600;
+}
+.pagination-custom .page-item.disabled .page-link {
+    color: #cbd5e1;
+}
+
+.pagination-icon {
+    font-size: 16px;
+}

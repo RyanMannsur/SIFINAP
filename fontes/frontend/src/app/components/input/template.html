@@ -1,0 +1,40 @@
+<div class="mb-3">
+  <label *ngIf="label" class="form-label text-muted small mb-1">{{ label }}</label>
+  <div class="position-relative" [class.has-icon]="icon" [ngSwitch]="type">
+    
+    <textarea *ngSwitchCase="'textarea'"
+      class="form-control"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [value]="value"
+      (input)="onInputChanged($event)"
+      (blur)="onTouched()"></textarea>
+
+    <select *ngSwitchCase="'select'"
+      class="form-select"
+      [disabled]="disabled"
+      [value]="value"
+      (change)="onInputChanged($event)"
+      (blur)="onTouched()">
+      <option *ngIf="placeholder" value="" disabled selected>{{ placeholder }}</option>
+      <option *ngFor="let opt of options" [value]="opt.value">{{ opt.label }}</option>
+    </select>
+
+    <ng-container *ngSwitchDefault>
+      <input 
+        [type]="type"
+        class="form-control"
+        [class.rounded-pill]="type === 'search'"
+        [placeholder]="placeholder"
+        [disabled]="disabled"
+        [value]="value"
+        (input)="onInputChanged($event)"
+        (blur)="onTouched()"
+      />
+      <span *ngIf="icon" class="material-icons position-absolute top-50 translate-middle-y end-0 me-3 text-muted input-icon">
+          {{ icon }}
+      </span>
+    </ng-container>
+
+  </div>
+</div>

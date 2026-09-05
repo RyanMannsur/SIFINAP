@@ -1,0 +1,259 @@
+<app-navbar
+  [ano]="anoAtual"
+  [mes]="mesAtual"
+  (mesAnterior)="navegarMesAnterior()"
+  (proximoMes)="navegarProximoMes()"
+  (adicionarDivida)="abrirAdicionarDivida()"
+/>
+
+<main class="dashboard-main">
+  <div class="container-fluid px-3 px-md-4">
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-warning" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+      </div>
+    }
+
+    <!-- Erro -->
+    @if (erro()) {
+      <div class="alert alert-danger mt-4">{{ erro() }}</div>
+    }
+
+    @if (!loading() && mes()) {
+      <!-- Cards de resumo -->
+      <div class="resumo-grid mt-4">
+        <app-resumo-card
+          titulo="Total do Mês"
+          [valor]="mes()!.totalMes"
+          icone="receipt_long"
+          variante="total"
+        />
+        <app-resumo-card
+          titulo="Já Pago"
+          [valor]="mes()!.totalPago"
+          icone="check_circle"
+          variante="pago"
+          [subtitulo]="mes()!.quantidadePagas + ' dívida(s) paga(s)'"
+        />
+        <app-resumo-card
+          titulo="Falta Pagar"
+          [valor]="mes()!.totalAPagar"
+          icone="pending"
+          variante="apagar"
+          [subtitulo]="mes()!.quantidadeVencidas + ' vencida(s)'"
+        />
+        <app-resumo-card
+          titulo="A Vencer"
+          [valor]="0"
+          icone="event"
+          variante="neutro"
+          [subtitulo]="mes()!.quantidadeAVencer + ' nos próximos dias'"
+        />
+      </div>
+
+      <!-- Próximas a vencer -->
+      @if (dividasProximasAVencer.length > 0) {
+        <section class="section-card mt-4">
+          <div class="section-header">
+            <span class="material-icons text-warning">alarm</span>
+            <h2 class="section-title">Próximas a Vencer <span class="badge-count">{{ dividasProximasAVencer.length }}</span></h2>
+          </div>
+          <div class="proximas-grid">
+            @for (d of dividasProximasAVencer; track d.id) {
+              <div class="proxima-card">
+                <div class="proxima-card__nome">{{ d.nome }}</div>
+                <div class="proxima-card__info d-flex justify-content-between align-items-center mt-1">
+                  <span class="proxima-card__data">{{ d.dataVencimento | date:'dd/MM' }}</span>
+                  <span class="proxima-card__valor">
+                    @if (d.valor) {
+                      {{ d.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                    } @else {
+                      <em class="text-muted" style="font-size: 0.75rem">Sem valor</em>
+                    }
+                  </span>
+                </div>
+                <button class="btn-pagar-proxima mt-2" (click)="marcarPago(d.id)">
+                  <span class="material-icons">check</span> Pagar
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Dívidas vencidas -->
+      @if (dividasVencidas.length > 0) {
+        <div class="vencidas-alerta mt-3">
+          <span class="material-icons">warning</span>
+          {{ dividasVencidas.length }} dívida(s) vencida(s) — regularize o quanto antes!
+        </div>
+      }
+
+      <!-- Tabela principal de dívidas -->
+      <section class="section-card mt-4">
+        <div class="section-header">
+          <span class="material-icons text-warning">list_alt</span>
+          <h2 class="section-title">Dívidas do Mês</h2>
+          <span class="badge-count ms-auto">{{ mes()!.dividas.length }}</span>
+        </div>
+
+        @if (mes()!.dividas.length === 0) {
+          <div class="empty-state">
+            <span class="material-icons">sentiment_satisfied</span>
+            <p>Nenhuma dívida neste mês!</p>
+            <button class="btn-add-empty" (click)="abrirAdicionarDivida()">Adicionar primeira dívida</button>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="dividas-table w-100">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th class="text-center">Vencimento</th>
+                  <th class="text-end">Valor</th>
+                  <th class="text-center">Status</th>
+                  <th class="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (divida of mes()!.dividas; track divida.id) {
+                  <app-divida-row
+                    [divida]="divida"
+                    [ano]="anoAtual"
+                    [mes]="mesAtual"
+                    (onPagar)="marcarPago($event)"
+                    (onEstornar)="desmarcarPago($event)"
+                    (onEditarValor)="abrirEditarValor($event)"
+                    (onEditarCompleto)="abrirEditarCompleto($event)"
+                    (onDeletar)="confirmarDeletar($event)"
+                  />
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+  </div>
+</main>
+
+<!-- Modal: Editar Valor Rápido -->
+@if (modalEditarValorAberto) {
+  <div class="modal-overlay" (click)="fecharModalValor()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-box__header">
+        <span class="material-icons">edit</span>
+        <h3>{{ dividaEditando?.tipo === 'CARTAO' ? 'Inserir Fatura' : 'Editar Valor' }}</h3>
+        <button class="modal-close" (click)="fecharModalValor()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="modal-box__body">
+        <p class="text-muted mb-3">{{ dividaEditando?.nome }}</p>
+        <label class="form-label">Valor (R$)</label>
+        <input
+          id="input-valor-divida"
+          type="number"
+          class="form-control form-control-dark"
+          [(ngModel)]="novoValor"
+          placeholder="0,00"
+          step="0.01"
+          min="0"
+          autofocus
+        />
+      </div>
+      <div class="modal-box__footer">
+        <button class="btn-modal-cancel" (click)="fecharModalValor()">Cancelar</button>
+        <button class="btn-modal-confirm" (click)="salvarValor()">Salvar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Editar Dívida Completa -->
+@if (modalEditarCompletoAberto) {
+  <div class="modal-overlay" (click)="fecharModalEditarCompleto()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-box__header">
+        <span class="material-icons text-warning">edit_note</span>
+        <h3>Editar Dívida</h3>
+        <button class="modal-close" (click)="fecharModalEditarCompleto()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="modal-box__body">
+        <div class="mb-3">
+          <label class="form-label">Nome da Dívida *</label>
+          <input
+            type="text"
+            class="form-control form-control-dark"
+            [(ngModel)]="editNome"
+            placeholder="Nome da dívida"
+          />
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label">Valor (R$)</label>
+            <input
+              type="number"
+              step="0.01"
+              class="form-control form-control-dark"
+              [(ngModel)]="editValor"
+              placeholder="0,00"
+            />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Dia do Vencimento *</label>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              class="form-control form-control-dark"
+              [(ngModel)]="editDiaVencimento"
+            />
+          </div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Observações</label>
+          <textarea
+            class="form-control form-control-dark"
+            rows="2"
+            [(ngModel)]="editObservacao"
+            placeholder="Observações..."
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-box__footer">
+        <button class="btn-modal-cancel" (click)="fecharModalEditarCompleto()">Cancelar</button>
+        <button class="btn-modal-confirm" (click)="salvarEdicaoCompleta()">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Confirmar Deletar -->
+@if (modalDeletarAberto) {
+  <div class="modal-overlay" (click)="modalDeletarAberto = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-box__header">
+        <span class="material-icons text-danger">delete</span>
+        <h3>Remover Dívida</h3>
+        <button class="modal-close" (click)="modalDeletarAberto = false">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="modal-box__body">
+        <p>Tem certeza que deseja remover <strong>{{ dividaDeletando?.nome }}</strong>?</p>
+        <p class="text-muted small">Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-box__footer">
+        <button class="btn-modal-cancel" (click)="modalDeletarAberto = false">Cancelar</button>
+        <button class="btn-modal-danger" (click)="executarDeletar()">Remover</button>
+      </div>
+    </div>
+  </div>
+}

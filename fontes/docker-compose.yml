@@ -1,0 +1,53 @@
+services:
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: sifinap-postgres
+    environment:
+      POSTGRES_DB: sifinap
+      POSTGRES_USER: sifinap
+      POSTGRES_PASSWORD: sifinap123
+    ports:
+      - "5433:5432"
+    volumes:
+      - sifinap_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sifinap -d sifinap"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Backend Java Spring Boot
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: sifinap-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sifinap
+      SPRING_DATASOURCE_USERNAME: sifinap
+      SPRING_DATASOURCE_PASSWORD: sifinap123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Frontend Angular (Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: sifinap-frontend
+    ports:
+      - "80:80"
+      - "4200:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  sifinap_data:
+    driver: local

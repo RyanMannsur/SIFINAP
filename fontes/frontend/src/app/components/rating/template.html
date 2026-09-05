@@ -1,0 +1,10 @@
+<div class="d-inline-flex align-items-center rating-container" [class.readonly]="readonly" (mouseleave)="!readonly && setHover(0)">
+  <span 
+    *ngFor="let star of starsArray" 
+    class="material-icons star-icon"
+    [class.active]="star <= (hoverVal || rating)"
+    (click)="!readonly && setRating(star)"
+    (mouseenter)="!readonly && setHover(star)">
+    {{ star <= (hoverVal || rating) ? 'star' : 'star_border' }}
+  </span>
+</div>

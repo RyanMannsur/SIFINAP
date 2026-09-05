@@ -1,0 +1,22 @@
+<div *ngIf="isOpen" class="modal-backdrop fade show"></div>
+<div *ngIf="isOpen" class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" (click)="close()">
+  <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+    <div class="modal-content border-0 shadow">
+      
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">{{ title }}</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+      </div>
+
+      <div class="modal-body">
+        <p *ngIf="text" class="text-muted">{{ text }}</p>
+        <ng-content select="[body]"></ng-content>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <ng-content select="[footer]"></ng-content>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+.btn-dark {
+    background-color: #333333;
+    border-color: #333333;
+    color: white;
+}
+.btn-dark:hover {
+    background-color: #000000;
+    border-color: #000000;
+}
+.btn-secondary {
+    background-color: #e2e8f0;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+.btn-secondary:hover {
+    background-color: #cbd5e1;
+    border-color: #cbd5e1;
+    color: #334155;
+}

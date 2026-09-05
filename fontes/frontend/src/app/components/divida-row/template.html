@@ -1,0 +1,79 @@
+<tr class="divida-tr" [class.divida-tr--pago]="divida.pago">
+  <!-- Nome + badges -->
+  <td class="divida-nome-cell">
+    <div class="d-flex flex-column gap-1">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="divida-nome" [class.text-muted]="divida.pago">{{ divida.nome }}</span>
+        @if (parcelaLabel) {
+          <span class="badge-parcela">{{ parcelaLabel }}</span>
+        }
+        @if (divida.responsavel) {
+          <span class="badge-repasse">
+            <span class="material-icons" style="font-size: 0.7rem">person</span>
+            {{ divida.responsavel }}
+          </span>
+        }
+      </div>
+      <span class="divida-tipo-label">{{ tipoLabel }}</span>
+    </div>
+  </td>
+
+  <!-- Vencimento -->
+  <td class="text-center divida-venc-cell">
+    <span class="venc-badge" [class.venc-badge--vencido]="statusClass === 'vencido' && !divida.pago">
+      {{ diaVencimentoFormatado }}
+    </span>
+  </td>
+
+  <!-- Valor -->
+  <td class="text-end divida-valor-cell">
+    @if (divida.valor !== null && divida.valor !== undefined) {
+      <span class="divida-valor" [class.text-muted]="divida.pago">
+        {{ divida.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+      </span>
+    } @else {
+      <button class="btn-inserir-valor" (click)="onEditarValor.emit(divida)" title="Inserir valor da fatura">
+        <span class="material-icons">edit</span>
+        Inserir fatura
+      </button>
+    }
+  </td>
+
+  <!-- Status -->
+  <td class="text-center divida-status-cell">
+    <span class="status-badge badge-{{ statusClass }}">{{ statusLabel }}</span>
+  </td>
+
+  <!-- Ações -->
+  <td class="text-end divida-acoes-cell">
+    <div class="d-flex align-items-center justify-content-end gap-1">
+      @if (!divida.pago) {
+        <button
+          class="action-btn action-btn--pagar"
+          (click)="onPagar.emit(divida.id)"
+          title="Marcar como pago">
+          <span class="material-icons">check_circle</span>
+        </button>
+      } @else {
+        <button
+          class="action-btn action-btn--estornar"
+          (click)="onEstornar.emit(divida.id)"
+          title="Desfazer pagamento">
+          <span class="material-icons">undo</span>
+        </button>
+      }
+      <button
+        class="action-btn action-btn--editar"
+        (click)="onEditarCompleto.emit(divida)"
+        title="Editar dívida">
+        <span class="material-icons">edit</span>
+      </button>
+      <button
+        class="action-btn action-btn--deletar"
+        (click)="onDeletar.emit(divida.id)"
+        title="Remover">
+        <span class="material-icons">delete</span>
+      </button>
+    </div>
+  </td>
+</tr>
