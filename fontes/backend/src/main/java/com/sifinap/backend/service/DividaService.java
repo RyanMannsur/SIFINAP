@@ -80,10 +80,43 @@ public class DividaService {
     @Transactional
     public DividaResponseDTO atualizar(Long id, DividaUpdateDTO dto) {
         Divida divida = buscarPorId(id);
+        String nomeAntigo = divida.getNome();
+
         divida.setNome(dto.getNome());
         divida.setValor(dto.getValor());
         divida.setDiaVencimento(dto.getDiaVencimento());
         divida.setObservacao(dto.getObservacao());
+
+        // Se for um cartão baseado em template, atualiza o template globalmente
+        if (divida.getDividaTemplate() != null) {
+            DividaTemplate template = divida.getDividaTemplate();
+            if (dto.getNome() != null) template.setNome(dto.getNome());
+            if (dto.getDiaVencimento() != null) template.setDiaVencimento(dto.getDiaVencimento());
+            dividaTemplateRepository.save(template);
+
+            // Atualiza o nome/vencimento de todos os registros em aberto deste cartão
+            List<Divida> cartoesAbertos = dividaRepository.findAll().stream()
+                .filter(d -> d.getDividaTemplate() != null && d.getDividaTemplate().getId().equals(template.getId()) && !Boolean.TRUE.equals(d.getPago()))
+                .toList();
+            for (Divida d : cartoesAbertos) {
+                d.setNome(dto.getNome());
+                if (dto.getDiaVencimento() != null) d.setDiaVencimento(dto.getDiaVencimento());
+                dividaRepository.save(d);
+            }
+        }
+
+        // Se for Repasse, atualiza o nome em repasses futuros em aberto
+        if (divida.getTipo() == TipoDivida.REPASSE && dto.getNome() != null && !dto.getNome().equals(nomeAntigo)) {
+            List<Divida> repassesFuturos = dividaRepository.findAll().stream()
+                .filter(d -> d.getTipo() == TipoDivida.REPASSE && d.getNome().equalsIgnoreCase(nomeAntigo) && !Boolean.TRUE.equals(d.getPago()))
+                .toList();
+            for (Divida r : repassesFuturos) {
+                r.setNome(dto.getNome());
+                if (dto.getDiaVencimento() != null) r.setDiaVencimento(dto.getDiaVencimento());
+                dividaRepository.save(r);
+            }
+        }
+
         divida = dividaRepository.save(divida);
         MesFinanceiro mes = divida.getMesFinanceiro();
         return toDividaResponseDTO(divida, mes.getAno(), mes.getMes());
@@ -195,7 +228,8 @@ public class DividaService {
         );
     }
 
-    private LocalDate calcularDataVencimento(int ano, int mes, int dia) {
+    private LocalDate calcularDataVencimento(int ano, int mes, Integer dia) {
+        if (dia == null) return null;
         try {
             YearMonth ym = YearMonth.of(ano, mes);
             int diaAjustado = Math.min(dia, ym.lengthOfMonth());

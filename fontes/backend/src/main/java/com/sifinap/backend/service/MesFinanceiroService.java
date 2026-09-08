@@ -210,7 +210,8 @@ public class MesFinanceiroService {
         );
     }
 
-    private LocalDate calcularDataVencimento(int ano, int mes, int dia) {
+    private LocalDate calcularDataVencimento(int ano, int mes, Integer dia) {
+        if (dia == null) return null;
         try {
             YearMonth ym = YearMonth.of(ano, mes);
             int diaAjustado = Math.min(dia, ym.lengthOfMonth());
