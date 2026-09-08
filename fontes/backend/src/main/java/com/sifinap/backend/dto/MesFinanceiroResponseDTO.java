@@ -12,6 +12,7 @@ public record MesFinanceiroResponseDTO(
     BigDecimal totalMes,
     BigDecimal totalPago,
     BigDecimal totalAPagar,
+    BigDecimal totalAVencer,
     Long quantidadePagas,
     Long quantidadeAVencer,
     Long quantidadeVencidas

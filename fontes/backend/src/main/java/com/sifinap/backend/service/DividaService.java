@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +67,11 @@ public class DividaService {
         if ((dto.tipo() == TipoDivida.PARCELADA || dto.tipo() == TipoDivida.EMPRESTIMO)
             && dto.totalParcelas() != null && dto.parcelaAtual() != null) {
             propagarParcelas(divida, ano, mes, dto);
+        }
+
+        // Para REPASSE: propagar para meses futuros já existentes
+        if (dto.tipo() == TipoDivida.REPASSE) {
+            propagarRepasse(divida, ano, mes, dto);
         }
 
         return toDividaResponseDTO(divida, ano, mes);
@@ -143,6 +149,32 @@ public class DividaService {
                 .build();
 
             dividaRepository.save(parcelaFutura);
+        }
+    }
+
+    private void propagarRepasse(Divida origem, int anoInicial, int mesInicial, DividaCreateDTO dto) {
+        List<MesFinanceiro> mesesFuturos = mesFinanceiroRepository.findAllByOrderByAnoDescMesDesc().stream()
+            .filter(m -> m.getAno() > anoInicial || (m.getAno() == anoInicial && m.getMes() > mesInicial))
+            .toList();
+
+        for (MesFinanceiro mesFuturo : mesesFuturos) {
+            boolean jaExiste = mesFuturo.getDividas().stream()
+                .anyMatch(d -> d.getTipo() == TipoDivida.REPASSE && d.getNome().equalsIgnoreCase(dto.nome()));
+
+            if (!jaExiste) {
+                Divida repasseFuturo = Divida.builder()
+                    .mesFinanceiro(mesFuturo)
+                    .nome(dto.nome())
+                    .valor(dto.valor())
+                    .diaVencimento(dto.diaVencimento())
+                    .tipo(TipoDivida.REPASSE)
+                    .responsavel(dto.responsavel())
+                    .observacao(dto.observacao())
+                    .pago(false)
+                    .build();
+
+                dividaRepository.save(repasseFuturo);
+            }
         }
     }
 

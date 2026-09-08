@@ -39,7 +39,76 @@ public class MesFinanceiroService {
             .findByAnoAndMes(ano, mes)
             .orElseGet(() -> inicializarMes(ano, mes));
 
+        garantirCartoesTemplate(mesFinanceiro);
+        garantirRepasses(mesFinanceiro);
+
         return toResponseDTO(mesFinanceiro);
+    }
+
+    private void garantirRepasses(MesFinanceiro mesFinanceiro) {
+        YearMonth ymAnterior = YearMonth.of(mesFinanceiro.getAno(), mesFinanceiro.getMes()).minusMonths(1);
+        MesFinanceiro mesAnterior = mesFinanceiroRepository
+            .findByAnoAndMes(ymAnterior.getYear(), ymAnterior.getMonthValue())
+            .orElse(null);
+
+        if (mesAnterior == null) return;
+
+        boolean mudou = false;
+        List<Divida> repassesAnteriores = mesAnterior.getDividas().stream()
+            .filter(d -> d.getTipo() == TipoDivida.REPASSE)
+            .toList();
+
+        for (Divida repasse : repassesAnteriores) {
+            boolean jaExiste = mesFinanceiro.getDividas().stream()
+                .anyMatch(d -> d.getTipo() == TipoDivida.REPASSE && d.getNome().equalsIgnoreCase(repasse.getNome()));
+
+            if (!jaExiste) {
+                Divida novoRepasse = Divida.builder()
+                    .mesFinanceiro(mesFinanceiro)
+                    .nome(repasse.getNome())
+                    .valor(repasse.getValor())
+                    .diaVencimento(repasse.getDiaVencimento())
+                    .tipo(TipoDivida.REPASSE)
+                    .responsavel(repasse.getResponsavel())
+                    .observacao(repasse.getObservacao())
+                    .pago(false)
+                    .build();
+                mesFinanceiro.getDividas().add(novoRepasse);
+                mudou = true;
+            }
+        }
+
+        if (mudou) {
+            mesFinanceiroRepository.save(mesFinanceiro);
+        }
+    }
+
+    private void garantirCartoesTemplate(MesFinanceiro mesFinanceiro) {
+        List<DividaTemplate> cartoes = dividaTemplateRepository.findByAtivaTrue();
+        boolean mudou = false;
+
+        for (DividaTemplate cartao : cartoes) {
+            boolean jaExiste = mesFinanceiro.getDividas().stream()
+                .anyMatch(d -> d.getDividaTemplate() != null && d.getDividaTemplate().getId().equals(cartao.getId()));
+
+            if (!jaExiste) {
+                Divida divida = Divida.builder()
+                    .mesFinanceiro(mesFinanceiro)
+                    .nome(cartao.getNome())
+                    .diaVencimento(cartao.getDiaVencimento())
+                    .valor(null)
+                    .tipo(TipoDivida.CARTAO)
+                    .dividaTemplate(cartao)
+                    .pago(false)
+                    .build();
+                mesFinanceiro.getDividas().add(divida);
+                mudou = true;
+            }
+        }
+
+        if (mudou) {
+            mesFinanceiroRepository.save(mesFinanceiro);
+        }
     }
 
     @Transactional
@@ -105,6 +174,11 @@ public class MesFinanceiroService {
 
         BigDecimal totalAPagar = totalMes.subtract(totalPago);
 
+        BigDecimal totalAVencer = dividas.stream()
+            .filter(d -> !d.pago() && d.valor() != null && d.dataVencimento() != null && !d.dataVencimento().isBefore(hoje))
+            .map(DividaResponseDTO::valor)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         long quantidadePagas = dividas.stream().filter(DividaResponseDTO::pago).count();
 
         long quantidadeVencidas = dividas.stream()
@@ -117,7 +191,7 @@ public class MesFinanceiroService {
 
         return new MesFinanceiroResponseDTO(
             mes.getId(), mes.getAno(), mes.getMes(), dividas,
-            totalMes, totalPago, totalAPagar,
+            totalMes, totalPago, totalAPagar, totalAVencer,
             quantidadePagas, quantidadeAVencer, quantidadeVencidas
         );
     }

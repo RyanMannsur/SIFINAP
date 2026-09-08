@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { Divida } from '../../shared/types/divida.types';
 
 @Component({
-  selector: 'app-divida-row',
+  selector: 'tr[app-divida-row]',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './template.html',
-  styleUrls: ['./styles.scss']
+  styleUrls: ['./styles.scss'],
+  host: {
+    'class': 'divida-tr',
+    '[class.divida-tr--pago]': 'divida?.pago'
+  }
 })
 export class DividaRowComponent {
   @Input() divida!: Divida;

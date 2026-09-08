@@ -14,6 +14,7 @@ export interface MesFinanceiroResponse {
   totalMes: number;
   totalPago: number;
   totalAPagar: number;
+  totalAVencer: number;
   quantidadePagas: number;
   quantidadeAVencer: number;
   quantidadeVencidas: number;

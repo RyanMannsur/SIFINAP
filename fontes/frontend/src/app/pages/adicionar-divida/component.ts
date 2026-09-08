@@ -40,7 +40,7 @@ export class AdicionarDividaComponent implements OnInit {
     { value: 'UNICA', label: 'Única', descricao: 'Aparece apenas neste mês' },
     { value: 'PARCELADA', label: 'Parcelada', descricao: 'Divide em X parcelas mensais' },
     { value: 'EMPRESTIMO', label: 'Empréstimo', descricao: 'Dívida mensal com parcelas' },
-    { value: 'REPASSE', label: 'Repasse', descricao: 'Valor a ser repassado para outra pessoa' },
+    { value: 'REPASSE', label: 'Repasse', descricao: 'Recorrente mensal (copia o mesmo valor todo mês)' },
   ];
 
   get precisaParcelas(): boolean {
