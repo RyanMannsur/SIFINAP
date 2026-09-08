@@ -160,7 +160,7 @@ public class MesFinanceiroService {
                 return true;
             })
             .map(d -> toDividaResponseDTO(d, mes.getAno(), mes.getMes()))
-            .sorted(Comparator.comparing(DividaResponseDTO::diaVencimento))
+            .sorted(Comparator.comparing(DividaResponseDTO::pago).thenComparing(DividaResponseDTO::diaVencimento))
             .toList();
 
         // Totais — ignora cartões sem valor inserido
