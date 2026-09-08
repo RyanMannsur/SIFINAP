@@ -1,9 +1,9 @@
 # Etapa 1: Build do Frontend Angular
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
+COPY fontes/frontend/package*.json ./
 RUN npm install
-COPY frontend/ ./
+COPY fontes/frontend/ ./
 RUN npm run build -- --configuration production
 
 # Etapa 2: Build do Backend Spring Boot (incluindo o Frontend estático)
@@ -11,10 +11,10 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 
 # Copia arquivos do Maven
-COPY backend/pom.xml .
-COPY backend/mvnw .
-COPY backend/.mvn .mvn
-COPY backend/src src
+COPY fontes/backend/pom.xml .
+COPY fontes/backend/mvnw .
+COPY fontes/backend/.mvn .mvn
+COPY fontes/backend/src src
 
 # Copia o build estático do Angular para a pasta static do Spring Boot
 COPY --from=frontend-build /app/frontend/dist/frontend/browser src/main/resources/static
