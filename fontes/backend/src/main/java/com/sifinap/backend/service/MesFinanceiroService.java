@@ -40,54 +40,28 @@ public class MesFinanceiroService {
             .orElseGet(() -> inicializarMes(ano, mes));
 
         garantirCartoesTemplate(mesFinanceiro);
-        garantirRepasses(mesFinanceiro);
 
         return toResponseDTO(mesFinanceiro);
     }
 
-    private void garantirRepasses(MesFinanceiro mesFinanceiro) {
-        YearMonth ymAnterior = YearMonth.of(mesFinanceiro.getAno(), mesFinanceiro.getMes()).minusMonths(1);
-        MesFinanceiro mesAnterior = mesFinanceiroRepository
-            .findByAnoAndMes(ymAnterior.getYear(), ymAnterior.getMonthValue())
-            .orElse(null);
-
-        if (mesAnterior == null) return;
-
-        boolean mudou = false;
-        List<Divida> repassesAnteriores = mesAnterior.getDividas().stream()
-            .filter(d -> d.getTipo() == TipoDivida.REPASSE)
-            .toList();
-
-        for (Divida repasse : repassesAnteriores) {
-            boolean jaExiste = mesFinanceiro.getDividas().stream()
-                .anyMatch(d -> d.getTipo() == TipoDivida.REPASSE && d.getNome().equalsIgnoreCase(repasse.getNome()));
-
-            if (!jaExiste) {
-                Divida novoRepasse = Divida.builder()
-                    .mesFinanceiro(mesFinanceiro)
-                    .nome(repasse.getNome())
-                    .valor(repasse.getValor())
-                    .diaVencimento(repasse.getDiaVencimento())
-                    .tipo(TipoDivida.REPASSE)
-                    .responsavel(repasse.getResponsavel())
-                    .observacao(repasse.getObservacao())
-                    .pago(false)
-                    .build();
-                mesFinanceiro.getDividas().add(novoRepasse);
-                mudou = true;
-            }
-        }
-
-        if (mudou) {
-            mesFinanceiroRepository.save(mesFinanceiro);
-        }
-    }
-
     private void garantirCartoesTemplate(MesFinanceiro mesFinanceiro) {
-        List<DividaTemplate> cartoes = dividaTemplateRepository.findByAtivaTrue();
+        List<DividaTemplate> cartoesAtivos = dividaTemplateRepository.findByAtivaTrue();
         boolean mudou = false;
 
-        for (DividaTemplate cartao : cartoes) {
+        // 1. Remove pendências de cartões que foram desativados
+        boolean removeu = mesFinanceiro.getDividas().removeIf(d -> 
+            d.getDividaTemplate() != null && 
+            !Boolean.TRUE.equals(d.getDividaTemplate().getAtiva()) && 
+            !Boolean.TRUE.equals(d.getPago()) && 
+            d.getValor() == null
+        );
+
+        if (removeu) {
+            mudou = true;
+        }
+
+        // 2. Adiciona cartões ativos que ainda não estejam no mês
+        for (DividaTemplate cartao : cartoesAtivos) {
             boolean jaExiste = mesFinanceiro.getDividas().stream()
                 .anyMatch(d -> d.getDividaTemplate() != null && d.getDividaTemplate().getId().equals(cartao.getId()));
 
@@ -123,10 +97,10 @@ public class MesFinanceiroService {
             .mes(mes)
             .build();
 
-        // Adiciona cartões automaticamente (copiando valor do mês anterior se existir)
         YearMonth ymAnterior = YearMonth.of(ano, mes).minusMonths(1);
         MesFinanceiro mesAnteriorOpt = mesFinanceiroRepository.findByAnoAndMes(ymAnterior.getYear(), ymAnterior.getMonthValue()).orElse(null);
 
+        // 1. Adiciona cartões ativos automaticamente
         List<DividaTemplate> cartoes = dividaTemplateRepository.findByAtivaTrue();
         for (DividaTemplate cartao : cartoes) {
             BigDecimal valorAnterior = null;
@@ -150,6 +124,27 @@ public class MesFinanceiroService {
             novoMes.getDividas().add(divida);
         }
 
+        // 2. Copia repasses do mês anterior (se o repasse não tiver sido cancelado no mês anterior)
+        if (mesAnteriorOpt != null) {
+            List<Divida> repassesAnteriores = mesAnteriorOpt.getDividas().stream()
+                .filter(d -> d.getTipo() == TipoDivida.REPASSE)
+                .toList();
+
+            for (Divida repasse : repassesAnteriores) {
+                Divida novoRepasse = Divida.builder()
+                    .mesFinanceiro(novoMes)
+                    .nome(repasse.getNome())
+                    .valor(repasse.getValor())
+                    .diaVencimento(repasse.getDiaVencimento())
+                    .tipo(TipoDivida.REPASSE)
+                    .responsavel(repasse.getResponsavel())
+                    .observacao(repasse.getObservacao())
+                    .pago(false)
+                    .build();
+                novoMes.getDividas().add(novoRepasse);
+            }
+        }
+
         return mesFinanceiroRepository.save(novoMes);
     }
 
@@ -157,6 +152,13 @@ public class MesFinanceiroService {
         LocalDate hoje = LocalDate.now();
 
         List<DividaResponseDTO> dividas = mes.getDividas().stream()
+            .filter(d -> {
+                if (d.getDividaTemplate() != null && !Boolean.TRUE.equals(d.getDividaTemplate().getAtiva())) {
+                    // Só mantém divida de template desativado se ela foi paga ou já tinha valor registrado
+                    return Boolean.TRUE.equals(d.getPago()) || d.getValor() != null;
+                }
+                return true;
+            })
             .map(d -> toDividaResponseDTO(d, mes.getAno(), mes.getMes()))
             .sorted(Comparator.comparing(DividaResponseDTO::diaVencimento))
             .toList();
