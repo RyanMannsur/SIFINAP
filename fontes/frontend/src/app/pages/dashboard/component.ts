@@ -65,6 +65,14 @@ export class DashboardComponent implements OnInit {
       });
   }
 
+  isVencida(divida: Divida): boolean {
+    if (divida.pago || !divida.dataVencimento) return false;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const venc = new Date(divida.dataVencimento + 'T00:00:00');
+    return venc < hoje;
+  }
+
   ngOnInit() {
     this.route.params.subscribe(params => {
       const ano = params['ano'] ? parseInt(params['ano']) : new Date().getFullYear();
