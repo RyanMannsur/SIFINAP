@@ -1,17 +1,28 @@
-# Dockerfile para build e execução do Backend Spring Boot
+# Etapa 1: Build do Frontend Angular
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build -- --configuration production
+
+# Etapa 2: Build do Backend Spring Boot (incluindo o Frontend estático)
 FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /app
 
-# Copia arquivos do Maven e fontes do backend
+# Copia arquivos do Maven
 COPY backend/pom.xml .
 COPY backend/mvnw .
 COPY backend/.mvn .mvn
 COPY backend/src src
 
-# Concede permissão e realiza o build da aplicação pulando testes para agilidade
+# Copia o build estático do Angular para a pasta static do Spring Boot
+COPY --from=frontend-build /app/frontend/dist/frontend/browser src/main/resources/static
+
+# Realiza o build do JAR único
 RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
-# Etapa final de execução
+# Etapa 3: Imagem final de execução
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
