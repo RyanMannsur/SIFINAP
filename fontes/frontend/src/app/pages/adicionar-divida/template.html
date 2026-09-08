@@ -107,17 +107,6 @@
               </small>
             </div>
 
-            <!-- Responsável (se repasse) -->
-            <div class="col-12 col-md-6" *ngIf="precisaResponsavel">
-              <label class="form-label">Pessoa Responsável (Repasse) *</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Ex: Walkiria, João..."
-                [(ngModel)]="responsavel"
-                name="responsavel"
-              />
-            </div>
 
             <!-- Parcela Atual e Total de Parcelas (se parcelada/empréstimo) -->
             <ng-container *ngIf="precisaParcelas">

@@ -24,4 +24,8 @@ export class CartaoService {
   ativar(id: number): Observable<CartaoTemplate> {
     return this.http.patch<CartaoTemplate>(`${this.baseUrl}/${id}/ativar`, {});
   }
+
+  deletar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }

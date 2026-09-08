@@ -75,4 +75,28 @@ public class DividaTemplateController {
         template = dividaTemplateRepository.save(template);
         return ResponseEntity.ok(new DividaTemplateResponseDTO(template.getId(), template.getNome(), template.getDiaVencimento(), template.getAtiva()));
     }
+
+    @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        DividaTemplate template = dividaTemplateRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cartão não encontrado"));
+
+        // Remove pendências não pagas e desvincula histórico
+        List<com.sifinap.backend.entity.Divida> dividas = dividaRepository.findAll().stream()
+            .filter(d -> d.getDividaTemplate() != null && d.getDividaTemplate().getId().equals(id))
+            .toList();
+
+        for (com.sifinap.backend.entity.Divida d : dividas) {
+            if (!Boolean.TRUE.equals(d.getPago()) && d.getValor() == null) {
+                dividaRepository.delete(d);
+            } else {
+                d.setDividaTemplate(null);
+                dividaRepository.save(d);
+            }
+        }
+
+        dividaTemplateRepository.delete(template);
+        return ResponseEntity.noContent().build();
+    }
 }

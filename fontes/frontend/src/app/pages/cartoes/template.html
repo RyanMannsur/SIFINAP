@@ -87,12 +87,16 @@
                 <small class="text-secondary d-block mt-1">Vence todo dia {{ c.diaVencimento }}</small>
               </div>
 
-              <div>
-                <button *ngIf="c.ativa" class="btn btn-sm btn-outline-danger" (click)="desativar(c.id)">
+              <div class="d-flex gap-2">
+                <button *ngIf="c.ativa" class="btn btn-sm btn-outline-warning" (click)="desativar(c.id)">
                   Desativar
                 </button>
                 <button *ngIf="!c.ativa" class="btn btn-sm btn-outline-success" (click)="ativar(c.id)">
                   Ativar
+                </button>
+                <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" (click)="deletar(c.id)" title="Excluir Cartão">
+                  <span class="material-icons" style="font-size: 1rem">delete</span>
+                  <span>Excluir</span>
                 </button>
               </div>
             </div>

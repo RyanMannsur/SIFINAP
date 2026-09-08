@@ -47,10 +47,6 @@ export class AdicionarDividaComponent implements OnInit {
     return this.tipo === 'PARCELADA' || this.tipo === 'EMPRESTIMO';
   }
 
-  get precisaResponsavel(): boolean {
-    return this.tipo === 'REPASSE';
-  }
-
   get precisaCartao(): boolean {
     return this.tipo === 'CARTAO';
   }
@@ -93,9 +89,6 @@ export class AdicionarDividaComponent implements OnInit {
     if (this.valorObrigatorio && (this.valor == null || this.valor <= 0)) {
       this.erro.set('Valor é obrigatório para este tipo de dívida.'); return;
     }
-    if (this.precisaResponsavel && !this.responsavel.trim()) {
-      this.erro.set('Informe o nome do responsável pelo repasse.'); return;
-    }
 
     this.salvando.set(true);
 
@@ -113,7 +106,6 @@ export class AdicionarDividaComponent implements OnInit {
       dto.parcelaAtual = this.parcelaAtual;
       dto.totalParcelas = this.totalParcelas;
     }
-    if (this.precisaResponsavel) dto.responsavel = this.responsavel.trim();
     if (this.cartaoTemplateId) dto.dividaTemplateId = Number(this.cartaoTemplateId);
 
     this.dividaService.criar(dto).subscribe({

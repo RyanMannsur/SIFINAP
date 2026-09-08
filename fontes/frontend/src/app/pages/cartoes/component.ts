@@ -69,6 +69,12 @@ export class CartoesComponent implements OnInit {
     this.cartaoService.ativar(id).subscribe(() => this.carregarCartoes());
   }
 
+  deletar(id: number) {
+    if (confirm('Tem certeza que deseja excluir este cartão de crédito definitivamente?')) {
+      this.cartaoService.deletar(id).subscribe(() => this.carregarCartoes());
+    }
+  }
+
   voltar() {
     this.router.navigate(['/dashboard']);
   }
